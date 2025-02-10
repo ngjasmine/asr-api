@@ -22,7 +22,7 @@ def ping():
 @app.post("/asr")
 async def transcribe_audio(file: UploadFile = File(...)):
     """
-    ASR endpoint that transcribes multiple MP3 files.
+    ASR endpoint that transcribe a single MP3 file.
     """
     response = {}
 
