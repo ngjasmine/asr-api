@@ -4,7 +4,7 @@ from fastapi import FastAPI, File, UploadFile
 import numpy as np
 import io
 from pydub import AudioSegment
-import json
+from typing import List
 
 app = FastAPI()
 
@@ -20,39 +20,42 @@ def ping():
     return{"message": "pong"}
 
 @app.post("/asr")
-async def transcribe_audio(file: UploadFile = File(...)):
+async def transcribe_audio(files: List[UploadFile] = File(...)):
     """
-    ASR endpoint that transcribes an MP3 file.
+    ASR endpoint that transcribes multiple MP3 files.
     """
+    response = {}
 
-    # Read uploaded file
-    audio_data = await file.read()
+    for file in files:
 
-    # Convert MP3 to WAV (16kHz, mono)
-    audio = AudioSegment.from_file(io.BytesIO(audio_data), format="mp3")
-    audio = audio.set_frame_rate(16000).set_channels(1)
+        # Read uploaded file
+        audio_data = await file.read()
 
-    # Convert to NumPy array
-    samples = np.array(audio.get_array_of_samples(), dtype=np.float32) / 32768.0  # Normalize
+        # Convert MP3 to WAV (16kHz, mono)
+        audio = AudioSegment.from_file(io.BytesIO(audio_data), format="mp3")
+        audio = audio.set_frame_rate(16000).set_channels(1)
 
-    # Process input
-    input_values = processor(samples, return_tensors="pt", sampling_rate=16000).input_values
+        # Convert to NumPy array
+        samples = np.array(audio.get_array_of_samples(), dtype=np.float32) / 32768.0  # Normalize
 
-    # Perform inference
-    with torch.no_grad():
-        logits = model(input_values).logits
-    predicted_ids = torch.argmax(logits, dim=-1)
+        # Process input
+        input_values = processor(samples, return_tensors="pt", sampling_rate=16000).input_values
 
-    # Decode transcription
-    transcription = processor.batch_decode(predicted_ids)[0]
+        # Perform inference
+        with torch.no_grad():
+            logits = model(input_values).logits
+        predicted_ids = torch.argmax(logits, dim=-1)
 
-    # Calculate duration
-    duration = str(round(len(audio) / 1000, 2))  # Duration in seconds (milliseconds to seconds), to 2 dp
+        # Decode transcription
+        transcription = processor.batch_decode(predicted_ids)[0]
 
-    # json response format
-    response = {
-        "transcription": transcription, 
-        "duration": duration
-        }
-    
-    return json.dumps(response)
+        # Calculate duration
+        duration = str(round(len(audio) / 1000, 2))  # Duration in seconds (milliseconds to seconds), to 2 dp
+
+        # append file's result to response dictionary
+        response[file.filename] = {
+            "transcription": transcription, 
+            "duration": duration
+            }
+
+        return response
