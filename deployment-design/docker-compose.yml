@@ -32,7 +32,7 @@ services:
       # - ELASTIC_PASSWORD=elastic4asr
       - xpack.security.enabled=false
       - http.cors.enabled=true
-      - http.cors.allow-origin=http://localhost:3000
+      - http.cors.allow-origin="*""
       - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT,DELETE
       - http.cors.allow-headers=X-Requested-With,Content-Type,Content-Length,Authorization
     ports:
@@ -40,16 +40,19 @@ services:
     volumes:
       - esdata2:/usr/share/elasticsearch/data
 
-  # search-ui:
-  #   build: .
-  #   container_name: search-ui
-  #   environment:
-  #     - REACT_APP_ELASTICSEARCH_URL=http://elasticsearch:9200
-  #     - REACT_APP_SEARCH_INDEX=search-index
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - elasticsearch-node1
+  search-ui:
+    build: ../search-ui
+    container_name: search-ui
+    environment:
+      # Point to the Elasticsearch service; note that inside Docker, use the service name
+      - REACT_APP_ELASTIC_ENDPOINT=http://localhost:9200
+      - REACT_APP_INDEX_NAME=cv-transcriptions
+      # Include the API key if security is enabled (or remove if not needed)
+      - REACT_APP_ELASTIC_API_KEY=u99O8CffTxeTQX-K7lTwAg # search only key
+    ports:
+      - "3000:3000"
+    depends_on:
+      - elasticsearch-node1
 
 volumes:
   esdata1:
