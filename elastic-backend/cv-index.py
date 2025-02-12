@@ -1,54 +1,61 @@
-import pandas as pd
-import numpy as np
+import csv
+import os
 from elasticsearch import Elasticsearch, helpers
+from dotenv import load_dotenv
 
-# Connect to Elasticsearch
+# Load environment variables
+load_dotenv()
+
+# Retrieve the Elasticsearch credentials from environment variables
+ELASTIC_ENDPOINT = os.getenv("ELASTIC_ENDPOINT")
+ELASTIC_API_KEY_ID = os.getenv("ELASTIC_API_KEY_ID")
+ELASTIC_API_KEY_SECRET = os.getenv("ELASTIC_API_KEY_SECRET")
+
+# Configure  Elasticsearch instance
+# es = Elasticsearch(
+#     ELASTIC_ENDPOINT,
+#     api_key=(ELASTIC_API_KEY_ID, ELASTIC_API_KEY_SECRET)
+# )
+
+# Configure Elasticsearch for local
 es = Elasticsearch("http://localhost:9200")
 
-# Load CSV
-# csv_file = "/usr/share/elasticsearch/cv-valid-dev.csv"
-csv_file = "data/common_voice/cv-valid-dev.csv"
-df = pd.read_csv(csv_file)
+def csv_to_actions(csv_file, index_name):
+    """Generator function that reads CSV rows and yields actions for bulk indexing."""
+    with open(csv_file, encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            print("Indexing row:", row)
 
-# Replace NaN values with None (which becomes null in JSON)
-df = df.replace({np.nan: None})
+            # For each field, if it's blank, assign a default empty string (or a default value if desired), not undefined or null
+            row["filename"] = row.get("filename", "").strip()
+            row["text"] = row.get("text", "").strip()
+            row["generated_text"] = row.get("generated_text", "").strip()
+            # For numeric fields, assign default 0 if blank
+            row["up_votes"] = int(row["up_votes"]) if row.get("up_votes", "").strip() else 0
+            row["down_votes"] = int(row["down_votes"]) if row.get("down_votes", "").strip() else 0
+            row["duration"] = float(row["duration"]) if row.get("duration", "").strip() else 0.0
+            # For keyword fields, assign an empty string if blank
+            row["age"] = row.get("age", "").strip()
+            row["gender"] = row.get("gender", "").strip()
+            row["accent"] = row.get("accent", "").strip()
 
-# Define Elasticsearch index
-index_name = "cv-transcriptions"
 
-# Delete existing index (if needed)
-if es.indices.exists(index=index_name):
-    es.indices.delete(index=index_name)
+            # Optionally convert fields as needed (e.g., numbers, empty strings, etc.)
+            # For example, if up_votes/down_votes should be integers:
+            row["up_votes"] = int(row["up_votes"]) if row["up_votes"] else 0
+            row["down_votes"] = int(row["down_votes"]) if row["down_votes"] else 0
+            row["duration"] = float(row["duration"]) if row["duration"] else 0.0
 
-# Define mappings for correct data types
-mappings = {
-    "mappings": {
-        "properties": {
-            "filename": {"type": "text"},
-            "text": {"type": "text"},
-            "generated_text": {"type": "text"},
-            "age": {"type": "keyword"},
-            "gender": {"type": "keyword"},
-            "accent": {"type": "keyword"},
-            "duration": {"type": "float"},
-            "up_votes": {"type": "integer"},
-            "down_votes": {"type": "integer"}
-        }
-    }
-}
+            yield {
+                "_index": index_name,
+                "_source": row,
+            }
 
-# Create index with mappings
-es.options(ignore_status=400).indices.create(index=index_name, body=mappings)
-
-# Prepare data for bulk indexing
-def generate_data():
-    for _, row in df.iterrows():
-        yield {
-            "_index": index_name,
-            "_source": row.to_dict()
-        }
-
-# Bulk index data
-helpers.bulk(es, generate_data())
-
-print(f"Successfully indexed {len(df)} records into {index_name}")
+if __name__ == "__main__":
+    index_name = "cv-transcriptions" 
+    csv_file = "data/common_voice/cv-valid-dev.csv" 
+    
+    # Use the bulk helper to index all documents
+    helpers.bulk(es, csv_to_actions(csv_file, index_name))
+    print("Bulk indexing completed.")
