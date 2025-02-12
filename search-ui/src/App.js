@@ -34,32 +34,31 @@ const connector = new ElasticsearchAPIConnector({
   index: process.env.REACT_APP_INDEX_NAME
 });
 const config = {
+  debug: true,
+  alwaysSearchOnInitialLoad: true,
+  apiConnector: connector,
   searchQuery: {
     search_fields: {
-      // We're prioritizing the full-text field "generated_text"
       generated_text: { weight: 3 }
     },
     result_fields: {
-      // Return a snippet for the generated_text field
       generated_text: {
         snippet: {
           size: 100,
           fallback: true
         }
       },
-      // Also display these fields as raw values
       duration: { raw: {} },
       age: { raw: {} },
       gender: { raw: {} },
       accent: { raw: {} }
     },
-    // Facets that users can filter by (for exact matching)
+    // Define facets for filtering
     disjunctiveFacets: ["age", "gender", "accent"],
     facets: {
       age: { type: "value" },
       gender: { type: "value" },
       accent: { type: "value" },
-      // If you want to filter by duration ranges, define a range facet.
       duration: {
         type: "range",
         ranges: [
@@ -74,11 +73,12 @@ const config = {
     results: {
       resultsPerPage: 5,
       search_fields: {
-        // Use the "suggest" sub-field for autocomplete
+        // Using "generated_text" here instead of "generated_text.suggest"
+        // if your mapping does not create a "suggest" sub-field.
         "generated_text.suggest": { weight: 3 }
       },
       result_fields: {
-        generated_text: {
+        "generated_text.suggest": {
           snippet: {
             size: 100,
             fallback: true
@@ -92,10 +92,10 @@ const config = {
       },
       size: 4
     }
-  },
-  apiConnector: connector,
-  alwaysSearchOnInitialLoad: true
+  }
 };
+
+
 
 export default function App() {
   return (
@@ -115,7 +115,7 @@ export default function App() {
                       titleField: "generated_text", // Use your field here
                       shouldTrackClickThrough: true
                     }}
-                    autocompleteSuggestions={true}
+                    autocompleteSuggestions={false}
                     debounceLength={0}
                   />
                 }
@@ -137,10 +137,10 @@ export default function App() {
                   />
                 }
                 bodyHeader={
-                  <>
+                  <React.Fragment>
                     {wasSearched && <PagingInfo />}
                     {wasSearched && <ResultsPerPage />}
-                  </>
+                  </React.Fragment>
                 }
                 bodyFooter={<Paging />}
               />
@@ -151,49 +151,3 @@ export default function App() {
     </SearchProvider>
   );
 }
-//   return (
-//     <SearchProvider config={config}>
-//       <WithSearch mapContextToProps={({ wasSearched }) => ({ wasSearched })}>
-//         {({ wasSearched }) => {
-//           return (
-//             <div className="App">
-//               <ErrorBoundary>
-//                 <Layout
-//                   header={<SearchBox autocompleteSuggestions={true} />}
-//                   sideContent={
-//                     <div>
-//                       {wasSearched && (
-//                         <Sorting
-//                           label={"Sort by"}
-//                           sortOptions={buildSortOptionsFromConfig()}
-//                         />
-//                       )}
-//                       {getFacetFields().map(field => (
-//                         <Facet key={field} field={field} label={field} />
-//                       ))}
-//                     </div>
-//                   }
-//                   bodyContent={
-//                     <Results
-//                       titleField={getConfig().titleField}
-//                       urlField={getConfig().urlField}
-//                       thumbnailField={getConfig().thumbnailField}
-//                       shouldTrackClickThrough={true}
-//                     />
-//                   }
-//                   bodyHeader={
-//                     <React.Fragment>
-//                       {wasSearched && <PagingInfo />}
-//                       {wasSearched && <ResultsPerPage />}
-//                     </React.Fragment>
-//                   }
-//                   bodyFooter={<Paging />}
-//                 />
-//               </ErrorBoundary>
-//             </div>
-//           );
-//         }}
-//       </WithSearch>
-//     </SearchProvider>
-//   );
-// }
