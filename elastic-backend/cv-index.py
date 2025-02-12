@@ -1,33 +1,54 @@
 import pandas as pd
-import json
 import numpy as np
+from elasticsearch import Elasticsearch, helpers
+
+# Connect to Elasticsearch
+es = Elasticsearch("http://localhost:9200")
 
 # Load CSV
-csv_file = "../data/common_voice/cv-valid-dev.csv" 
+# csv_file = "/usr/share/elasticsearch/cv-valid-dev.csv"
+csv_file = "data/common_voice/cv-valid-dev.csv"
 df = pd.read_csv(csv_file)
 
 # Replace NaN values with None (which becomes null in JSON)
 df = df.replace({np.nan: None})
 
-# Convert to Elasticsearch-friendly JSON format
-records = []
-for i, row in df.iterrows():
-    record = {
-        "_index": "search-index",
-        "_id": i,
-        "_source": row.to_dict()
+# Define Elasticsearch index
+index_name = "cv-transcriptions"
+
+# Delete existing index (if needed)
+if es.indices.exists(index=index_name):
+    es.indices.delete(index=index_name)
+
+# Define mappings for correct data types
+mappings = {
+    "mappings": {
+        "properties": {
+            "filename": {"type": "text"},
+            "text": {"type": "text"},
+            "generated_text": {"type": "text"},
+            "age": {"type": "keyword"},
+            "gender": {"type": "keyword"},
+            "accent": {"type": "keyword"},
+            "duration": {"type": "float"},
+            "up_votes": {"type": "integer"},
+            "down_votes": {"type": "integer"}
+        }
     }
-    records.append(record)
+}
 
-# Save to JSON
-json_file = "data.json"
+# Create index with mappings
+es.options(ignore_status=400).indices.create(index=index_name, body=mappings)
 
-# NDJSON format: used for bulk indexing
-with open(json_file, "w") as f:
-    for i, row in df.iterrows():
-        # Write the metadata line first
-        f.write(json.dumps({"index": {"_index": "search-index", "_id": i + 1}}) + "\n")
-        # Write the actual document
-        f.write(json.dumps(row.to_dict()) + "\n")
+# Prepare data for bulk indexing
+def generate_data():
+    for _, row in df.iterrows():
+        yield {
+            "_index": index_name,
+            "_source": row.to_dict()
+        }
 
-print(f"JSON file saved: {json_file}")
+# Bulk index data
+helpers.bulk(es, generate_data())
+
+print(f"Successfully indexed {len(df)} records into {index_name}")
