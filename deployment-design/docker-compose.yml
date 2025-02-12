@@ -1,0 +1,58 @@
+
+services:
+  elasticsearch-node1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.4.3
+    container_name: elasticsearch-node1
+    environment:
+      - node.name=elasticsearch-node1
+      - cluster.name=es-cluster
+      - discovery.seed_hosts=elasticsearch-node2
+      - cluster.initial_master_nodes=elasticsearch-node1,elasticsearch-node2
+      # - ELASTIC_PASSWORD=elastic4asr
+      - xpack.security.enabled=false
+      - http.cors.enabled=true
+      - http.cors.allow-origin="*"
+      - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT,DELETE
+      - http.cors.allow-headers=X-Requested-With,Content-Type,Content-Length,Authorization,x-elastic-client-meta
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+      # - ../data/common_voice/cv-valid-dev.csv:/usr/share/elasticsearch/cv-valid-dev.csv:ro
+  
+  elasticsearch-node2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.4.3
+    container_name: elasticsearch-node2
+    environment:
+      - node.name=elasticsearch-node2
+      - cluster.name=es-cluster
+      - discovery.seed_hosts=elasticsearch-node1
+      - cluster.initial_master_nodes=elasticsearch-node1,elasticsearch-node2
+      # - ELASTIC_PASSWORD=elastic4asr
+      - xpack.security.enabled=false
+      - http.cors.enabled=true
+      - http.cors.allow-origin=http://localhost:3000
+      - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT,DELETE
+      - http.cors.allow-headers=X-Requested-With,Content-Type,Content-Length,Authorization
+    ports:
+      - "9201:9200"
+    volumes:
+      - esdata2:/usr/share/elasticsearch/data
+
+  # search-ui:
+  #   build: .
+  #   container_name: search-ui
+  #   environment:
+  #     - REACT_APP_ELASTICSEARCH_URL=http://elasticsearch:9200
+  #     - REACT_APP_SEARCH_INDEX=search-index
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - elasticsearch-node1
+
+volumes:
+  esdata1:
+    driver: local
+  esdata2:
+    driver: local
