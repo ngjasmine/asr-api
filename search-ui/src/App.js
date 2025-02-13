@@ -42,6 +42,7 @@ const config = {
       generated_text: { weight: 3 }
     },
     result_fields: {
+      filename: { raw: {} },
       generated_text: {
         snippet: {
           size: 100,
@@ -122,7 +123,13 @@ export default function App() {
                 // Side content: remove sorting options (empty sortOptions) and add facets.
                 sideContent={
                   <div>
-                    {wasSearched && <Sorting label={"Sort by"} sortOptions={[]} />}
+                    {/* {wasSearched && <Sorting label={"Sort by"} sortOptions={[
+                      { name: "Relevance", value: "", direction: "" },  // Default
+                      { name: "Duration (Shortest First)", value: "duration", direction: "asc" },
+                      { name: "Duration (Longest First)", value: "duration", direction: "desc" },
+                      { name: "Age (Youngest First)", value: "age", direction: "asc" },
+                      { name: "Age (Oldest First)", value: "age", direction: "desc" }
+                    ]} />} */}
                     <Facet key={"1"} field={"age"} label={"Age"} />
                     <Facet key={"2"} field={"gender"} label={"Gender"} />
                     <Facet key={"3"} field={"accent"} label={"Accent"} />
