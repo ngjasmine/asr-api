@@ -53,7 +53,7 @@ services:
 
   search-ui:
     build: 
-      context: ./search-ui
+      context: ../search-ui
       dockerfile: Dockerfile
     container_name: search-ui
     environment:
