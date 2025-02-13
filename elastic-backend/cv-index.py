@@ -100,8 +100,9 @@ def csv_to_actions(csv_file, index_name):
             }
 
 if __name__ == "__main__":
-    csv_file = "data/common_voice/cv-valid-dev.csv" 
-
+    # csv_file = "data/common_voice/cv-valid-dev.csv" 
+    csv_file = "/app/data/common_voice/cv-valid-dev.csv"
+    
     # Delete index if it exists
     delete_index(index_name)
 
