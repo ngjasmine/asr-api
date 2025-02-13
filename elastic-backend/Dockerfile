@@ -9,4 +9,4 @@ COPY . /app
 
 RUN pip install --no-cache-dir elasticsearch python-dotenv
 
-CMD ["python", "elastic-backend/cv-index.py"]
+CMD ["python", "/app/cv-index.py"]
