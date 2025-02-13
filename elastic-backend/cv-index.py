@@ -11,17 +11,17 @@ ELASTIC_ENDPOINT = os.getenv("ELASTIC_ENDPOINT")
 ELASTIC_API_KEY_ID = os.getenv("ELASTIC_API_KEY_ID")
 ELASTIC_API_KEY_SECRET = os.getenv("ELASTIC_API_KEY_SECRET")
 
-# Configure  Elastic cloud
-es = Elasticsearch(
-    hosts=[ELASTIC_ENDPOINT],
-    api_key=(ELASTIC_API_KEY_ID, ELASTIC_API_KEY_SECRET)
-)
+# # Configure  Elastic cloud
+# es = Elasticsearch(
+#     hosts=[ELASTIC_ENDPOINT],
+#     api_key=(ELASTIC_API_KEY_ID, ELASTIC_API_KEY_SECRET)
+# )
 
 # Configure Elasticsearch for local dev
 # es = Elasticsearch("http://localhost:9200")
 
-# Configure Elasticsearch for AWS deployment
-# es = Elasticsearch("http://elasticsearch-node1:9200")
+Configure Elasticsearch for AWS deployment
+es = Elasticsearch("http://elasticsearch-node1:9200")
 
 index_name = "cv-transcriptions"
 
