@@ -21,7 +21,7 @@ es = Elasticsearch(
 # es = Elasticsearch("http://localhost:9200")
 
 # Configure Elasticsearch for AWS deployment
-es = Elasticsearch("http://elasticsearch-node1:9200")
+# es = Elasticsearch("http://elasticsearch-node1:9200")
 
 def csv_to_actions(csv_file, index_name):
     """Generator function that reads CSV rows and yields actions for bulk indexing."""
