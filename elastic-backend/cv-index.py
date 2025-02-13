@@ -13,7 +13,7 @@ ELASTIC_API_KEY_SECRET = os.getenv("ELASTIC_API_KEY_SECRET")
 
 # Configure  Elasticsearch instance
 es = Elasticsearch(
-    ELASTIC_ENDPOINT,
+    hosts=[ELASTIC_ENDPOINT],
     api_key=(ELASTIC_API_KEY_ID, ELASTIC_API_KEY_SECRET)
 )
 
