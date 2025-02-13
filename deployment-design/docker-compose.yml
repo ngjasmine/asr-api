@@ -39,7 +39,7 @@ services:
 
   cv-indexing:
     build:
-      context: ./elastic-backend
+      context: ../elastic-backend
       dockerfile: Dockerfile
     container_name: cv-indexing
     depends_on:
