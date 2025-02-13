@@ -39,8 +39,8 @@ services:
 
   cv-indexing:
     build:
-      context: .
-      dockerfile: ./elastic-backend/Dockerfile
+      context: ./elastic-backend
+      dockerfile: Dockerfile
     container_name: cv-indexing
     depends_on:
       elasticsearch-node1:
@@ -52,7 +52,9 @@ services:
     command: ["python", "elastic-backend/cv-index.py"]
 
   search-ui:
-    build: ./search-ui
+    build: 
+      context: ./search-ui
+      dockerfile: Dockerfile
     container_name: search-ui
     environment:
       # for local dev
