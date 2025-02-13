@@ -13,10 +13,9 @@ services:
       - http.cors.allow-origin="*"
       - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT,DELETE
       - http.cors.allow-headers=X-Requested-With,Content-Type,Content-Length,Authorization,x-elastic-client-meta
-    # for AWS deployment, keep Elasticsearch private
-    # ports:
-    #   - "9200:9200"
-    #   - "9300:9300"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
     volumes:
       - esdata1:/usr/share/elasticsearch/data
   
@@ -33,11 +32,24 @@ services:
       - http.cors.allow-origin="*""
       - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT,DELETE
       - http.cors.allow-headers=X-Requested-With,Content-Type,Content-Length,Authorization
-    # for AWS deployment, keep Elasticsearch private
-    # ports:
-    #   - "9201:9200"
+    ports:
+      - "9201:9200"
     volumes:
       - esdata2:/usr/share/elasticsearch/data
+
+  cv-indexing:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cv-indexing
+    depends_on:
+      elasticsearch-node1:
+        condition: service_healthy
+      elasticsearch-node2:
+        condition: service_healthy
+    environment:
+      - ELASTIC_ENDPOINT=http://elasticsearch-node1:9200
+    command: ["python", "elastic-backend/cv-index.py"]
 
   search-ui:
     build: ../search-ui
