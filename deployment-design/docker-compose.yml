@@ -13,6 +13,7 @@ services:
       - http.cors.allow-origin="*"
       - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT,DELETE
       - http.cors.allow-headers=X-Requested-With,Content-Type,Content-Length,Authorization,x-elastic-client-meta
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
       - "9200:9200"
     healthcheck:
@@ -36,6 +37,7 @@ services:
       - http.cors.allow-origin="*"
       - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT,DELETE
       - http.cors.allow-headers=X-Requested-With,Content-Type,Content-Length,Authorization
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
       - "9201:9200"
     healthcheck:
