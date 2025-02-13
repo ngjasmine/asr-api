@@ -13,6 +13,9 @@ RUN yarn install
 # Copy the rest of the app's source code
 COPY . .
 
+# Build the React app
+RUN yarn build
+
 # Expose port 3000
 EXPOSE 3000
 
