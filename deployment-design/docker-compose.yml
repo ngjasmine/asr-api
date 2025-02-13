@@ -21,8 +21,7 @@ services:
       retries: 10
       start_period: 10s
       timeout: 5s
-    networks:
-      - elastic
+
   
   elasticsearch-node2:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.4.3
@@ -45,8 +44,7 @@ services:
       retries: 10
       start_period: 10s
       timeout: 5s
-    networks:
-      - elastic
+
 
 
   cv-indexing:
