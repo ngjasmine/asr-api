@@ -12,13 +12,16 @@ ELASTIC_API_KEY_ID = os.getenv("ELASTIC_API_KEY_ID")
 ELASTIC_API_KEY_SECRET = os.getenv("ELASTIC_API_KEY_SECRET")
 
 # Configure  Elasticsearch instance
-# es = Elasticsearch(
-#     ELASTIC_ENDPOINT,
-#     api_key=(ELASTIC_API_KEY_ID, ELASTIC_API_KEY_SECRET)
-# )
+es = Elasticsearch(
+    ELASTIC_ENDPOINT,
+    api_key=(ELASTIC_API_KEY_ID, ELASTIC_API_KEY_SECRET)
+)
 
-# Configure Elasticsearch for local
-es = Elasticsearch("http://localhost:9200")
+# Configure Elasticsearch for local dev
+# es = Elasticsearch("http://localhost:9200")
+
+# Configure Elasticsearch for AWS deployment
+es = Elasticsearch("http://elasticsearch-node1:9200")
 
 def csv_to_actions(csv_file, index_name):
     """Generator function that reads CSV rows and yields actions for bulk indexing."""
