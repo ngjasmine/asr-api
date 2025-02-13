@@ -1,7 +1,6 @@
 .DS_Store
 __pycache__/
 
-data/*
-!data/common_voice/cv-valid-dev.csv
+data/
 .env
 
