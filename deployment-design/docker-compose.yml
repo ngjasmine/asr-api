@@ -61,7 +61,9 @@ services:
         condition: service_healthy
     environment:
       - ELASTIC_ENDPOINT=http://elasticsearch-node1:9200
-    command: ["python", "elastic-backend/cv-index.py"]
+    volumes:
+      - ./data/common_voice/cv-valid-dev.csv:/app/data/common_voice/cv-valid-dev.csv
+    command: ["python", "/app/cv-index.py"]
 
   search-ui:
     build: 
