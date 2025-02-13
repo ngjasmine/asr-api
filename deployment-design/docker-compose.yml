@@ -72,7 +72,7 @@ services:
       # for local dev
       # - REACT_APP_ELASTIC_ENDPOINT=http://localhost:9200
       # for AWS deployment:
-      - REACT_APP_ELASTIC_ENDPOINT=http://elasticsearch-node1:9200
+      - REACT_APP_ELASTIC_ENDPOINT=http://13.228.75.188:9200
       - REACT_APP_INDEX_NAME=cv-transcriptions
       # Include the API key if security is enabled
       - REACT_APP_ELASTIC_API_KEY=u99O8CffTxeTQX-K7lTwAg # search only key
