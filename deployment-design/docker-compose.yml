@@ -15,9 +15,14 @@ services:
       - http.cors.allow-headers=X-Requested-With,Content-Type,Content-Length,Authorization,x-elastic-client-meta
     ports:
       - "9200:9200"
-      - "9300:9300"
-    volumes:
-      - esdata1:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
+      interval: 10s
+      retries: 10
+      start_period: 10s
+      timeout: 5s
+    networks:
+      - elastic
   
   elasticsearch-node2:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.4.3
@@ -34,8 +39,15 @@ services:
       - http.cors.allow-headers=X-Requested-With,Content-Type,Content-Length,Authorization
     ports:
       - "9201:9200"
-    volumes:
-      - esdata2:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
+      interval: 10s
+      retries: 10
+      start_period: 10s
+      timeout: 5s
+    networks:
+      - elastic
+
 
   cv-indexing:
     build:
