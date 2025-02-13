@@ -11,7 +11,7 @@ ELASTIC_ENDPOINT = os.getenv("ELASTIC_ENDPOINT")
 ELASTIC_API_KEY_ID = os.getenv("ELASTIC_API_KEY_ID")
 ELASTIC_API_KEY_SECRET = os.getenv("ELASTIC_API_KEY_SECRET")
 
-# Configure  Elasticsearch instance
+# Configure  Elastic cloud
 es = Elasticsearch(
     hosts=[ELASTIC_ENDPOINT],
     api_key=(ELASTIC_API_KEY_ID, ELASTIC_API_KEY_SECRET)
@@ -22,6 +22,50 @@ es = Elasticsearch(
 
 # Configure Elasticsearch for AWS deployment
 # es = Elasticsearch("http://elasticsearch-node1:9200")
+
+index_name = "cv-transcriptions"
+
+index_body = {
+    "settings": {
+        "number_of_shards": 2,
+        "number_of_replicas": 1
+    },
+    "mappings": {
+        "properties": {
+            "filename": { "type": "text" },
+            "text": { "type": "text" },
+            "generated_text": {
+                "type": "text",
+                "fields": {
+                    "suggest": {
+                        "type": "search_as_you_type",
+                        "doc_values": False,
+                        "max_shingle_size": 3,
+                        "store": True
+                    }
+                }
+            },
+            "age": { "type": "keyword" },
+            "gender": { "type": "keyword" },
+            "accent": { "type": "keyword" },
+            "duration": { "type": "float" },
+            "up_votes": { "type": "integer" },
+            "down_votes": { "type": "integer" }
+        }
+    }
+}
+
+def delete_index(index_name):
+    """Deletes the index if it exists."""
+    if es.indices.exists(index=index_name):
+        es.indices.delete(index=index_name)
+        print(f"Index '{index_name}' deleted successfully.")
+
+def create_index(index_name, index_body):
+    """Creates the index with the given settings and mappings."""
+    response = es.indices.create(index=index_name, body=index_body)
+    print(f"Index '{index_name}' created successfully.")
+    print(response)
 
 def csv_to_actions(csv_file, index_name):
     """Generator function that reads CSV rows and yields actions for bulk indexing."""
@@ -56,8 +100,13 @@ def csv_to_actions(csv_file, index_name):
             }
 
 if __name__ == "__main__":
-    index_name = "cv-transcriptions" 
     csv_file = "data/common_voice/cv-valid-dev.csv" 
+
+    # Delete index if it exists
+    delete_index(index_name)
+
+    # Create a fresh index
+    create_index(index_name, index_body)
     
     # Use the bulk helper to index all documents
     helpers.bulk(es, csv_to_actions(csv_file, index_name))
