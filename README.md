@@ -116,12 +116,12 @@ The following instructions are for deploying on an AWS EC2 instance.
   git clone https://<your-github-username>:<your-token-here>@github.com/<your-github-username>/asr-api.git
   ```
 
-4. **Set up Elasticsearch
+4. **Set up Elasticsearch**
 * Sign up for a free account on [elasticsearch](https://www.elastic.co/elasticsearch). Create a deployment and generate 2 API keys:
   * API Key 1: with "create_index", "write", "all" privileges
   * API Key 2: with only "read" previleges
 
-* Update `deployment-design/docker-compose.yml`:
+* Update environment variables of search-ui service in `deployment-design/docker-compose.yml`:
      ```yaml
      search-ui:
        build:
